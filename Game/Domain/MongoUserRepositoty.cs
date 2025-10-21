@@ -14,6 +14,8 @@ namespace Game.Domain
         public MongoUserRepository(IMongoDatabase database)
         {
             userCollection = database.GetCollection<UserEntity>(CollectionName);
+            userCollection.Indexes
+                .CreateOne(Builders<UserEntity>.IndexKeys.Ascending("login"), new CreateIndexOptions { Unique = true });
         }
 
         public UserEntity Insert(UserEntity user)
@@ -34,7 +36,8 @@ namespace Game.Domain
             var user =  userCollection.Find(x => x.Login == login).FirstOrDefault();
             if (user is null)
             {
-                user = Insert(new UserEntity(new Guid()) { Login = login });
+                user = new UserEntity(new Guid()) { Login = login };
+                user = Insert(user);
             }
 
             return user;
